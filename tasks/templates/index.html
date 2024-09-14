@@ -1,10 +1,15 @@
+{% include "./layerd/base.html" %}
+{% block content %}
+
+{% if form %}
 <form action="/create/" method="post">
   {% csrf_token %} {{form.as_p}}
   <input type="submit" />
 </form>
+{% endif %}
 {% for task in tasks %}
 <div>
-   {% if task.status == False %}
+
   <h3>{{task.title}}</h3>
   <h3>{{task.date}}</h3>
  
@@ -13,6 +18,8 @@
   <a href="{% url "delete" task.id %}">delete</a>
   <a href="{% url "update" task.id %}">update</a>
   <a href="{% url "complete" task.id %}">Complete</a>
-   {% endif %}
 </div>
 {% endfor %}
+
+
+{% endblock  %}

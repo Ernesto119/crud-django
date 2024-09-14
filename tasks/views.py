@@ -4,7 +4,7 @@ from .models import Task
 
 
 def index(request):
-    tasks = Task.objects.all()
+    tasks = Task.objects.filter(status=False)
     return render(request, "index.html", {"form": TaskForm, "tasks": tasks})
 
 
@@ -18,8 +18,9 @@ def create(request):
     return redirect("/")
 
 
-def read(request):
-    pass
+def complete_list(request):
+    task_complete = Task.objects.filter(status=True)
+    return render(request, "index.html", {"tasks": task_complete})
 
 
 def update(request, pk):
@@ -39,9 +40,9 @@ def delete(request, pk):
     task.delete()
     return redirect("/")
 
-def complete(request,pk):
+
+def complete(request, pk):
     task = Task.objects.get(pk=pk)
     task.status = True
-    print(task.status)
     task.save()
-    return redirect('/')
+    return redirect("/")
