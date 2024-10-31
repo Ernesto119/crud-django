@@ -1,7 +1,8 @@
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from .form import TaskForm
 from .models import Task
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 def index(request):
     tasks = Task.objects.filter(status=False)
@@ -9,13 +10,13 @@ def index(request):
 
 
 def create(request):
-    form = TaskForm()
     if request.method == "POST":
         form = TaskForm(request.POST)
         if form.is_valid():
-            form.save()
+            task = form.save()
+            return JsonResponse({"id":task.id, "title":task.title})
 
-    return redirect("/")
+    return JsonResponse({'error:':'invalid'})
 
 
 def complete_list(request):
@@ -23,26 +24,27 @@ def complete_list(request):
     return render(request, "index.html", {"tasks": task_complete})
 
 
-def update(request, pk):
-    task = Task.objects.get(pk=pk)
+def update(request, id):
+    task = Task.objects.get(id=id)
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
-            form.save()
-            return redirect("/")
+            task = form.save()
+            return redirect('/')
+
     else:
         form = TaskForm(instance=task)
     return render(request, "update.html", {"form": form})
 
 
-def delete(request, pk):
-    task = Task.objects.get(pk=pk)
+def delete(request, id):
+    task = get_object_or_404(Task, id=id)
     task.delete()
-    return redirect("/")
+    return JsonResponse({"status": "deleted","id":id})
 
-
-def complete(request, pk):
-    task = Task.objects.get(pk=pk)
-    task.status = True
-    task.save()
-    return redirect("/")
+def complete(request, id):
+    if request.method == 'POST':
+        task = Task.objects.get(id=id)
+        task.status = True
+        task.save()
+        return JsonResponse({"status": "update","id":id})
